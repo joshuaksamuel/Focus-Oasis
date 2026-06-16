@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Oasis Hub</title>
+    <style>
+        :root {
+            --bg-color: #e0f2f1;
+            --card-color: #ffffff;
+            --primary-color: #00796b;
+            --text-color: #004d40;
+            --accent-color: #ff8f00;
+        }
+
+        /* Dark Theme Variables */
+        .dark-theme {
+            --bg-color: #121212;
+            --card-color: #1e1e1e;
+            --primary-color: #80cbc4;
+            --text-color: #e0f2f1;
+            --accent-color: #ffb300;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 800px;
+            margin: 0 auto 20px auto;
+        }
+
+        nav button {
+            background: none;
+            border: 2px solid var(--primary-color);
+            color: var(--text-color);
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        nav button.active {
+            background-color: var(--primary-color);
+            color: var(--bg-color);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .card {
+            background-color: var(--card-color);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Timer Styles */
+        .timer-display {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 15px 0;
+            color: var(--primary-color);
+        }
+
+        button.btn-main {
+            background-color: var(--primary-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        button.btn-main:active {
+            transform: scale(0.95);
+        }
+
+        /* Task List Styles */
+        .task-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            background: var(--card-color);
+            color: var(--text-color);
+        }
+
+        .task-list {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            animation: slideIn 0.2s ease;
+        }
+
+        .task-item.completed span {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        /* Modal / Pop-up Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--card-color);
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            text-align: left;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px; right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Keyframes */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2>🌴 Focus Oasis</h2>
+        <nav>
+            <button id="nav-dash" class="active" data-page="dashboard">Dashboard</button>
+            <button id="nav-stats" data-page="analytics">Analytics</button>
+            <button id="open-settings">⚙️ Settings</button>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main id="dashboard" class="page active">
+            <div class="card">
+                <h3>Session Timer</h3>
+                <div class="timer-display" id="timer-clock">25:00</div>
+                <button class="btn-main" id="timer-toggle">Start Focus</button>
+            </div>
+
+            <div class="card">
+                <h3>Today's Quests</h3>
+                <div class="task-input-group">
+                    <input type="text" id="task-input" placeholder="What are you conquering next?">
+                    <button class="btn-main" id="add-task-btn">Add</button>
+                </div>
+                <ul class="task-list" id="task-container">
+                    </ul>
+            </div>
+        </main>
+
+        <section id="analytics" class="page">
+            <div class="card">
+                <h3>Your Achievements</h3>
+                <p>Sessions Completed: <strong id="stat-sessions" style="color: var(--accent-color);">0</strong></p>
+                <p>Tasks Finished: <strong id="stat-tasks">0</strong></p>
+                <hr style="border-color: rgba(0,0,0,0.1)">
+                <p id="motivational-quote">"The journey of a thousand miles begins with a single step."</p>
+            </div>
+        </section>
+    </div>
+
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal">
+            <span class="close-modal" id="close-settings">&times;</span>
+            <h3>Oasis Configurations</h3>
+            <label style="display: block; margin: 15px 0 8px 0;">
+                Timer Duration (Minutes):
+                <input type="number" id="timer-duration-input" value="25" min="1" max="60" style="width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box;">
+            </label>
+            <div style="margin-top: 20px;">
+                <button class="btn-main" id="toggle-theme-btn" style="width: 100%;">Switch Dark/Light Mode</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- State Management ---
+        let appState = {
+            sessionsCompleted: 0,
+            tasksCompleted: 0,
+            timerMinutes: 25,
+            timerSeconds: 0,
+            timerInterval: null,
+            isTimerRunning: false
+        };
+
+        // --- DOM Elements ---
+        const pages = document.querySelectorAll('.page');
+        const navButtons = document.querySelectorAll('nav button[data-page]');
+        const timerClock = document.getElementById('timer-clock');
+        const timerToggle = document.getElementById('timer-toggle');
+        const taskInput = document.getElementById('task-input');
+        const addTaskBtn = document.getElementById('add-task-btn');
+        const taskContainer = document.getElementById('task-container');
+        const settingsModal = document.getElementById('settings-modal');
+        const openSettingsBtn = document.getElementById('open-settings');
+        const closeSettingsBtn = document.getElementById('close-settings');
+        const toggleThemeBtn = document.getElementById('toggle-theme-btn');
+        const durationInput = document.getElementById('timer-duration-input');
+
+        // --- Feature 1: Tabbed Page Navigation ---
+        navButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Remove active classes
+                navButtons.forEach(b => b.classList.remove('active'));
+                pages.forEach(p => p.classList.remove('active'));
+                
+                // Add active class to selected elements
+                btn.classList.add('active');
+                const targetPage = e.target.getAttribute('data-page');
+                document.getElementById(targetPage).classList.add('active');
+                
+                // Update Analytics View values if navigating there
+                if(targetPage === 'analytics') {
+                    document.getElementById('stat-sessions').innerText = appState.sessionsCompleted;
+                    document.getElementById('stat-tasks').innerText = appState.tasksCompleted;
+                }
+            });
+        });
+
+        // --- Feature 2: Settings Modal Pop-up ---
+        const toggleModal = (show) => {
+            if (show) settingsModal.classList.add('show');
+            else settingsModal.classList.remove('show');
+        };
+        openSettingsBtn.addEventListener('click', () => toggleModal(true));
+        closeSettingsBtn.addEventListener('click', () => toggleModal(false));
+        // Close modal if clicking outside the content window
+        settingsModal.addEventListener('click', (e) => {
+            if(e.target === settingsModal) toggleModal(false);
+        });
+
+        // --- Feature 3: Live Theme Swapping (CSS Manipulation) ---
+        toggleThemeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+        });
+
+        // --- Feature 4: Customizing Timer Length ---
+        durationInput.addEventListener('change', (e) => {
+            let val = parseInt(e.target.value);
+            if (val > 0 && val <= 60) {
+                appState.timerMinutes = val;
+                appState.timerSeconds = 0;
+                updateTimerDisplay();
+                if(appState.isTimerRunning) stopTimer();
+            }
+        });
+
+        // --- Feature 5: The Pomodoro Timer Mechanics ---
+        function updateTimerDisplay() {
+            let m = appState.timerMinutes < 10 ? '0' + appState.timerMinutes : appState.timerMinutes;
+            let s = appState.timerSeconds < 10 ? '0' + appState.timerSeconds : appState.timerSeconds;
+            timerClock.innerText = `${m}:${s}`;
+        }
+
+        function startTimer() {
+            appState.isTimerRunning = true;
+            timerToggle.innerText = "Pause Session";
+            timerToggle.style.backgroundColor = "#c62828"; // Alert color change
+
+            appState.timerInterval = setInterval(() => {
+                if (appState.timerSeconds === 0) {
+                    if (appState.timerMinutes === 0) {
+                        // Timer completed!
+                        clearInterval(appState.timerInterval);
+                        appState.sessionsCompleted++;
+                        alert("🎉 Brilliant work! Your focus period has concluded. Enjoy a mini break!");
+                        resetTimerSetup();
+                        return;
+                    }
+                    appState.timerMinutes--;
+                    appState.timerSeconds = 59;
+                } else {
+                    appState.timerSeconds--;
+                }
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(appState.timerInterval);
+            appState.isTimerRunning = false;
+            timerToggle.innerText = "Start Focus";
+            timerToggle.style.backgroundColor = "var(--primary-color)";
+        }
+
+        function resetTimerSetup() {
+            stopTimer();
+            appState.timerMinutes = parseInt(durationInput.value) || 25;
+            appState.timerSeconds = 0;
+            updateTimerDisplay();
+        }
+
+        timerToggle.addEventListener('click', () => {
+            if (appState.isTimerRunning) stopTimer();
+            else startTimer();
+        });
+
+        // --- Feature 6: Interactive Task Manager (DOM Creation & Modification) ---
+        function createNewTask() {
+            const taskText = taskInput.value.trim();
+            if (taskText === "") return;
+
+            const li = document.createElement('li');
+            li.className = "task-item";
+            
+            const span = document.createElement('span');
+            span.innerText = taskText;
+            
+            const completeBtn = document.createElement('button');
+            completeBtn.innerText = "✓";
+            completeBtn.style.cssText = "background: #4caf50; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;";
+
+            // Event handler attached directly to dynamically created elements
+            completeBtn.addEventListener('click', () => {
+                li.classList.toggle('completed');
+                if (li.classList.contains('completed')) {
+                    appState.tasksCompleted++;
+                    completeBtn.disabled = true;
+                    completeBtn.style.opacity = "0.4";
+                }
+            });
+
+            li.appendChild(span);
+            li.appendChild(completeBtn);
+            taskContainer.appendChild(li);
+
+            taskInput.value = ""; // Clear field
+        }
+
+        addTaskBtn.addEventListener('click', createNewTask);
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') createNewTask();
+        });
+    </script>
+</body>
+</html>
