@@ -61,5 +61,5 @@ const li = document.createElement('li');
 const completeBtn = document.createElement('button');
 // Event handler is attached safely directly to the new element
 completeBtn.addEventListener('click', () => { ... });
-📄 License
+License
 This project is open-source and free to modify, break, or scale up for your own educational journeys! Enjoy focusing!
